@@ -1,0 +1,6 @@
+LIBRARY "graphdat_filter.dll"
+ 
+EXPORTS
+    HttpFilterProc
+    GetFilterVersion
+    TerminateFilter
