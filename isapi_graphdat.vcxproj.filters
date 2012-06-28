@@ -79,6 +79,5 @@
     <None Include="isapi_graphdat.def">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="app.config" />
   </ItemGroup>
 </Project>
