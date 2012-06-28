@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "common.h"
 
 #if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
   #define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
@@ -54,8 +54,12 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
     }
   
 // Adjust for the timezone west of Greenwich
-      tz->tz_minuteswest = _timezone / 60;
-    tz->tz_dsttime = _daylight;
+	  long timezone;
+	  _get_timezone(&timezone);
+      tz->tz_minuteswest = timezone / 60;
+	  int daylight;
+	  _get_daylight(&daylight);
+	  tz->tz_dsttime = daylight;
   }
  
   return 0;
