@@ -78,17 +78,20 @@ bool config_init(
 	if (!init_validation(&validation))
 		return false;
 
-    CONFIG.agent_request_socket_config = (char *)malloc(strlen(ISAPI_GRAPHDAT_DEFAULT_SOCKET_PORT));
-	strcpy(CONFIG.agent_request_socket_config, ISAPI_GRAPHDAT_DEFAULT_SOCKET_PORT);
+	rsize_t len = strlen(ISAPI_GRAPHDAT_DEFAULT_SOCKET_PORT) + 1;
+    CONFIG.agent_request_socket_config = (char *)malloc(len);
+	strcpy_s(CONFIG.agent_request_socket_config, len, ISAPI_GRAPHDAT_DEFAULT_SOCKET_PORT);
 
 	char * path;
 
+	len = MAX_PATH + 1;
 	char exepath[MAX_PATH + 1];
 	if (GetModuleFileNameA(MODULE_HANDLE, exepath, MAX_PATH) != 0)
 	{
 		char * psz = strrchr(exepath, '\\') + 1;
-		
-		strcpy(psz, CONFIG_FILE);
+		len -= (psz - exepath);
+
+		strcpy_s(psz, len, CONFIG_FILE);
 
 		path = exepath;
 	}
@@ -111,8 +114,9 @@ bool config_init(
 		if (strcasecmp(args[0], "port") == 0)
 		{
 			free(CONFIG.agent_request_socket_config);
-			CONFIG.agent_request_socket_config = (char *)malloc(strlen(args[1]));
-			strcpy(CONFIG.agent_request_socket_config, args[1]);
+			rsize_t len = strlen(args[1]) + 1;
+			CONFIG.agent_request_socket_config = (char *)malloc(len);
+			strcpy_s(CONFIG.agent_request_socket_config, len, args[1]);
 			validation.agent_request_socket_config = true;
 		}
 	}

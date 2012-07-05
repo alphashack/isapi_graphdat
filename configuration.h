@@ -11,7 +11,7 @@ typedef struct
 	char * agent_request_socket_config;
 } gd_config_t;
 
-void config_free(void);
 bool config_init(void);
+void config_free(void);
 
 #endif // ISAPI_GRAPHDAT_CONFIGURATION_H

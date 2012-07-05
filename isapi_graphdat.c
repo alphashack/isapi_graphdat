@@ -62,7 +62,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 				if(s_eventSource != NULL)
 				{
 					DeregisterEventSource(s_eventSource);
-				}				config_free();
+				}
+				config_free();
 				break;
         }
         return TRUE;
