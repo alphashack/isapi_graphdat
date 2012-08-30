@@ -13,12 +13,12 @@ static HANDLE  s_eventSource = NULL;
 gd_config_t CONFIG;
 HMODULE MODULE_HANDLE;
 
-static double s_queryPerformanceFrequency = 0;
+static double s_performanceFrequency = 0;
 
 typedef struct
 {
-	timeval start;
-	timeval end;
+	LARGE_INTEGER start;
+	LARGE_INTEGER end;
 } request_time_t;
 
 void delegate_logger(graphdat_log_t type, void * user, const char * fmt, ...)
@@ -58,12 +58,12 @@ void isapi_init()
 	LARGE_INTEGER li;
 	if(QueryPerformanceFrequency(&li))
 	{
-		s_queryPerformanceFrequency = (double)li.QuadPart/1000;
+		s_performanceFrequency = double(li.QuadPart)/1000.0;
 	}
 
 	if(CONFIG.debug)
 	{
-		debug_log("QueryPerformanceFrequency %d\n", s_queryPerformanceFrequency);
+		debug_log("PerformanceFrequency %d\n", s_performanceFrequency);
 	}
 }
 
@@ -119,41 +119,36 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc, DWORD NotificationType, VO
 			{
 				PHTTP_FILTER_LOG r = (PHTTP_FILTER_LOG)pvData;
 
-				// resolution of request time is usec
-				unsigned long end_usec = ((request_time_t *)pfc->pFilterContext)->end.tv_sec * 1000000 + ((request_time_t *)pfc->pFilterContext)->end.tv_usec;
-				unsigned long start_usec = ((request_time_t *)pfc->pFilterContext)->start.tv_sec * 1000000 + ((request_time_t *)pfc->pFilterContext)->start.tv_usec;
-				long diff_usec = end_usec - start_usec;
-				double diff_msec = (double)diff_usec / 1000;
+				// resolution of request time is dependent on machine settings
+				double diff_msec = double(((request_time_t *)pfc->pFilterContext)->end.QuadPart - ((request_time_t *)pfc->pFilterContext)->start.QuadPart) / s_performanceFrequency;
 
 				graphdat_store((char *)r->pszOperation, strlen(r->pszOperation), (char *)r->pszTarget, strlen(r->pszTarget), diff_msec, delegate_logger, NULL, 0);
 
 				if(CONFIG.debug)
 				{
-					debug_log("SF_NOTIFY_LOG %s %lu %lu\n", r->pszTarget, start_usec, end_usec);
+					debug_log("SF_NOTIFY_LOG %s %s %fms\n", r->pszOperation, r->pszTarget, diff_msec);
 				}
 			}
 			break;
 		case SF_NOTIFY_PREPROC_HEADERS:
 			{
 				pfc->pFilterContext = pfc->AllocMem(pfc, sizeof(request_time_t), NULL);
-				gettimeofday(&((request_time_t *)pfc->pFilterContext)->start, NULL);
+				QueryPerformanceCounter(&((request_time_t *)pfc->pFilterContext)->start);
 
-				if(CONFIG.debug)
-				{
-					unsigned long start_usec = ((request_time_t *)pfc->pFilterContext)->start.tv_sec * 1000000 + ((request_time_t *)pfc->pFilterContext)->start.tv_usec;
-					debug_log("SF_NOTIFY_PREPROC_HEADERS %lu\n", start_usec);
-				}
+				//if(CONFIG.debug)
+				//{
+				//	debug_log("SF_NOTIFY_PREPROC_HEADERS %lu\n", ((request_time_t *)pfc->pFilterContext)->start.QuadPart);
+				//}
 			}
 			break;
 		case SF_NOTIFY_END_OF_REQUEST:
 			{
-				gettimeofday(&((request_time_t *)pfc->pFilterContext)->end, NULL);
+				QueryPerformanceCounter(&((request_time_t *)pfc->pFilterContext)->end);
 
-				if(CONFIG.debug)
-				{
-					unsigned long end_usec = ((request_time_t *)pfc->pFilterContext)->end.tv_sec * 1000000 + ((request_time_t *)pfc->pFilterContext)->end.tv_usec;
-					debug_log("SF_NOTIFY_END_OF_REQUEST %lu\n", end_usec);
-				}
+				//if(CONFIG.debug)
+				//{
+				//	debug_log("SF_NOTIFY_END_OF_REQUEST %lu\n", ((request_time_t *)pfc->pFilterContext)->end.QuadPart);
+				//}
 			}
 			break;
         default:
