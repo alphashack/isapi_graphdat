@@ -9,6 +9,8 @@
 #include <Winsock2.h>
 #include <time.h>
 #include <stdio.h>
+#include <share.h>
+#include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
 

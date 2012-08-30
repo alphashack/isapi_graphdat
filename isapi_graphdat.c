@@ -3,6 +3,7 @@
 #include "isapi_graphdat.h"
 #include "lib/module_graphdat/graphdat.h"
 #include "configuration.h"
+#include "debug.h"
 
 #ifndef ISAPI_GRAPHDAT_SOURCE
 #define ISAPI_GRAPHDAT_SOURCE "iis"
@@ -11,6 +12,8 @@
 static HANDLE  s_eventSource = NULL;
 gd_config_t CONFIG;
 HMODULE MODULE_HANDLE;
+
+static double s_queryPerformanceFrequency = 0;
 
 typedef struct
 {
@@ -50,6 +53,20 @@ void delegate_logger(graphdat_log_t type, void * user, const char * fmt, ...)
 	}
 }
 
+void isapi_init()
+{
+	LARGE_INTEGER li;
+	if(QueryPerformanceFrequency(&li))
+	{
+		s_queryPerformanceFrequency = (double)li.QuadPart/1000;
+	}
+
+	if(CONFIG.debug)
+	{
+		debug_log("QueryPerformanceFrequency %d\n", s_queryPerformanceFrequency);
+	}
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
 	MODULE_HANDLE = hModule;
@@ -57,7 +74,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
         {
 			case DLL_PROCESS_ATTACH:
 				config_init();
+				if(CONFIG.debug)
+				{
+					debug_init();
+				}
 				graphdat_init(CONFIG.agent_request_socket_config, strlen(CONFIG.agent_request_socket_config), ISAPI_GRAPHDAT_SOURCE, strlen(ISAPI_GRAPHDAT_SOURCE), delegate_logger, NULL);
+				isapi_init();
 				break;
 			case DLL_THREAD_ATTACH:
 				break;
@@ -70,6 +92,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 					DeregisterEventSource(s_eventSource);
 				}
 				config_free();
+				if(CONFIG.debug)
+				{
+					debug_term();
+				}
 				break;
         }
         return TRUE;
@@ -100,17 +126,34 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc, DWORD NotificationType, VO
 				double diff_msec = (double)diff_usec / 1000;
 
 				graphdat_store((char *)r->pszOperation, strlen(r->pszOperation), (char *)r->pszTarget, strlen(r->pszTarget), diff_msec, delegate_logger, NULL, 0);
+
+				if(CONFIG.debug)
+				{
+					debug_log("SF_NOTIFY_LOG %s %lu %lu\n", r->pszTarget, start_usec, end_usec);
+				}
 			}
 			break;
 		case SF_NOTIFY_PREPROC_HEADERS:
 			{
 				pfc->pFilterContext = pfc->AllocMem(pfc, sizeof(request_time_t), NULL);
 				gettimeofday(&((request_time_t *)pfc->pFilterContext)->start, NULL);
+
+				if(CONFIG.debug)
+				{
+					unsigned long start_usec = ((request_time_t *)pfc->pFilterContext)->start.tv_sec * 1000000 + ((request_time_t *)pfc->pFilterContext)->start.tv_usec;
+					debug_log("SF_NOTIFY_PREPROC_HEADERS %lu\n", start_usec);
+				}
 			}
 			break;
 		case SF_NOTIFY_END_OF_REQUEST:
 			{
 				gettimeofday(&((request_time_t *)pfc->pFilterContext)->end, NULL);
+
+				if(CONFIG.debug)
+				{
+					unsigned long end_usec = ((request_time_t *)pfc->pFilterContext)->end.tv_sec * 1000000 + ((request_time_t *)pfc->pFilterContext)->end.tv_usec;
+					debug_log("SF_NOTIFY_END_OF_REQUEST %lu\n", end_usec);
+				}
 			}
 			break;
         default:

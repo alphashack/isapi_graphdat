@@ -9,6 +9,7 @@ typedef struct
 {
 	// From graphdat-filter.dll.config
 	char * agent_request_socket_config;
+	bool debug;
 } gd_config_t;
 
 bool config_init(void);

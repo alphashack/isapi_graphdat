@@ -81,6 +81,7 @@ bool config_init(
 	rsize_t len = strlen(ISAPI_GRAPHDAT_DEFAULT_SOCKET_PORT) + 1;
     CONFIG.agent_request_socket_config = (char *)malloc(len);
 	strcpy_s(CONFIG.agent_request_socket_config, len, ISAPI_GRAPHDAT_DEFAULT_SOCKET_PORT);
+	CONFIG.debug = false;
 
 	char * path;
 
@@ -118,6 +119,10 @@ bool config_init(
 			CONFIG.agent_request_socket_config = (char *)malloc(len);
 			strcpy_s(CONFIG.agent_request_socket_config, len, args[1]);
 			validation.agent_request_socket_config = true;
+		}
+		else if (strcasecmp(args[0], "debug") == 0)
+		{
+			CONFIG.debug = atoi(args[1]) == 1;
 		}
 	}
 

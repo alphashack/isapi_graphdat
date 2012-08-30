@@ -45,6 +45,9 @@
     <ClCompile Include="lib\module_graphdat\os\windows\thread.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="debug.c">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="isapi_graphdat.h">
@@ -72,6 +75,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lib\module_graphdat\os\windows\os.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
