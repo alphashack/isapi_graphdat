@@ -201,6 +201,7 @@ call version-isapi-filter.cmd $(TargetPath) 0.2</Command>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
     </ClCompile>
+    <ClCompile Include="lib\module_graphdat\os\windows\timehelper.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="isapi_graphdat.h" />
