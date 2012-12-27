@@ -99,7 +99,15 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc, DWORD NotificationType, VO
 				long diff_usec = end_usec - start_usec;
 				double diff_msec = (double)diff_usec / 1000;
 
-				graphdat_store((char *)r->pszOperation, strlen(r->pszOperation), (char *)r->pszTarget, strlen(r->pszTarget), diff_msec, delegate_logger, NULL, 0);
+				char hostname[DEFAULT_BUFFER_SIZE] = "\0";
+				DWORD dwSize = DEFAULT_BUFFER_SIZE;
+				if (pfc->GetServerVariable(pfc, "HTTP_HOST", hostname, &dwSize))
+				{
+					if (strlen (hostname) > 0)
+					{
+						graphdat_store((char *)r->pszOperation, strlen(r->pszOperation), (char *)r->pszTarget, strlen(r->pszTarget), (char *)hostname, strlen(hostname), diff_msec, delegate_logger, NULL, 0);
+					}
+				}
 			}
 			break;
 		case SF_NOTIFY_PREPROC_HEADERS:

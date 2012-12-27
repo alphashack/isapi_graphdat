@@ -45,6 +45,9 @@
     <ClCompile Include="lib\module_graphdat\os\windows\thread.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lib\module_graphdat\os\windows\timehelper.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="isapi_graphdat.h">
