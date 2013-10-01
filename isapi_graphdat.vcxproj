@@ -84,6 +84,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ISAPI_GRAPHDAT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\lib\module_graphdat\os\;$(MSBuildProjectDirectory)\lib\module_graphdat\os\windows;$(MSBuildProjectDirectory)\msgpack-0.5.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
